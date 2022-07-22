@@ -7,44 +7,7 @@ let C_FLOW = {Template: 'Dependency Type',
 {Node:{id:5,nom:201,title:'B... The predecessor task must have started, before this task can be started',projectStatus:'ForApproval',duration: 2,role: 'C',cc: 68,Dependency: [{id:200,type:'s2s'}]}},
 {Node:{id:6,nom:202,title:'C...  The predecessor task must have started, before this task can be started',projectStatus:'ForApproval',duration: 5,role: 'C',cc: 70,Dependency: [{id:201,type:'s2s'}]}},
 
-{Node:{id:'line-break',nom:'cmd'}},
-{Node:{id:'heading',nom:'cmd',title:'Dependency Type:F2S'}},           
-{Node:{id:4,nom:172,title:'Dependency Type:F2S  (A,B,C)',projectStatus:'a',duration: 2,role: 'C',cc: 84,Dependency: []}},
-{Node:{id:5,nom:164,title:'B... predecessor task must of Finished, before this task can start',projectStatus:'a',duration: 2,role: 'C',cc: 68,Dependency: [{id:172}]}},
-{Node:{id:6,nom:165,title:'C... predecessor task must of Finished, before this task can start',projectStatus:'a',duration: 5,role: 'C',cc: 70,Dependency: [{id:164}]}},
 
-{Node:{id:'line-break',nom:'cmd'}},
-{Node:{id:'heading',nom:'cmd',title:'Dependency Type:S2F'}},
-                
-{Node:{id:4,nom:900,title:'Dependency Type:S2F  (A,B,C)',projectStatus:'a',duration: 2,role: 'C',cc: 84,Dependency: []}},
-{Node:{id:5,nom:901,title:'B...The predecessor task must have started, before this task can be finish',projectStatus:'a',duration: 2,role: 'C',cc: 68,Dependency: [{id:900,type:'s2f'}]}},
-{Node:{id:6,nom:902,title:'C...The predecessor task must have started, before this task can be finish',projectStatus:'a',duration: 5,role: 'C',cc: 70,Dependency: [{id:901,type:'s2f'}]}},
-                  
-{Node:{id:'line-break',nom:'cmd'}},
-{Node:{id:'heading',nom:'cmd',title:'Dependency Type:F2F'}},
-                  
-                  
-{Node:{id:4,nom:800,title:'Dependency Type:F2F  (A,B,C)',projectStatus:'a',duration: 2,role: 'Sales Support',cc: 84,Dependency: []}},
-{Node:{id:5,nom:801,title:'B... predecessor must have finished (submitted) before this task can finish',projectStatus:'a',duration: 2,role: 'B',cc: 68,Dependency: [{id:800,type:'f2f'}]}},
-{Node:{id:6,nom:802,title:'C... predecessor must have finished (submitted) before this task can finish',projectStatus:'a',duration: 5,role: 'B',cc: 70,Dependency: [{id:801,type:'f2f'}]}},
-                  
-                  
-{Node:{id:'line-break',nom:'cmd'}},
-{Node:{id:'heading',nom:'cmd',title:'Dependency Type:F2S & S2S & F2F'}},
-                  
-                  
-{Node:{id:4,nom:700,title:'Dependency Type:F2S & S2S & F2F  (A,B,C)',projectStatus:'c',duration: 2,role: 'b',cc: 84,Dependency: []}},
-{Node:{id:5,nom:701,title:'B... predecessor must have started before this task can start',projectStatus:'c',duration: 2,role: 'b',cc: 68,Dependency: [{id:700,type:'f2s'}]}},
-{Node:{id:6,nom:702,title:'C... predecessor must have finished before this task can finish',projectStatus:'c',duration: 5,role: 'b',cc: 70,Dependency: [{id:700,type:'s2s'},{id:701,type:'f2f'}]}},
-                 
-
-{Node:{id:'line-break',nom:'cmd'}},
-{Node:{id:'heading',nom:'cmd',title:'Model:Main Task, Pending Multiple Subtasks '}},
-                  
-                  
-{Node:{id:4,nom:2000,title:'Dependency Type:S2S & F2F  (A,B,C)',projectStatus:'c',duration: 2,role: 'A',cc: 84,Dependency: [{id:2001,type:'f2f'},{id:2002,type:'f2f'}]}},
-{Node:{id:5,nom:2001,title:'B... predecessor must have started before this task can start',projectStatus:'c',duration: 2,role: 'A',cc: 68,Dependency: [{id:2000,type:'s2s'}]}},
-{Node:{id:6,nom:2002,title:'C... predecessor must have finished before this task can finish',projectStatus:'c',duration: 5,role: 'A',cc: 70,Dependency: [{id:2000,type:'s2s'}]}},
 
 
 
@@ -100,7 +63,7 @@ var loaded = false;
 var c = 100;
 const DISPLAYX = C_FLOW.Nodes.length*100;
 const DISPLAYY = C_FLOW.Nodes.length*100;
-
+const dependencyLines = [];
 function nextColor() {
   c -=5;
   if ( c < 10 ){
@@ -122,6 +85,16 @@ function getNode(_flow, _nom ) {
   for ( let i in _flow.Nodes ){
  
     if ( _flow.Nodes[i].Node.nom === _nom){
+      return (_flow.Nodes[i].Node);
+    }
+  }
+  return (null);
+}
+function getNodeByID(_flow, _id ) {
+ 
+  for ( let i in _flow.Nodes ){
+ 
+    if ( _flow.Nodes[i].Node.id === _id){
       return (_flow.Nodes[i].Node);
     }
   }
@@ -150,6 +123,7 @@ function calc_I_PositionOfNode(_o){
   let bar = calcBarLen(rad);
   
   return ({
+    'position':'I',
     'x':(_o.x),
     'y':(_o.y+bar)
   })
@@ -160,6 +134,7 @@ function calc_S_PositionOfNode(_o){
   let bar = calcBarLen(rad);
   
   return ({
+    'position':'S',
     'x':(_o.x-bar),
     'y':(_o.y)
   })
@@ -169,6 +144,7 @@ function calc_F_PositionOfNode(_o){
   let bar = calcBarLen(rad);
   
   return ({
+    'position':'F',
     'x':(_o.x+bar),
     'y':(_o.y)
   })
@@ -176,7 +152,7 @@ function calc_F_PositionOfNode(_o){
 
 
 function drawNode(_o,_x,_y){
-  
+  console.log(`draw ${_o.id}`);
   let rad = calcDurationSize(_o.duration);
   let bar = calcBarLen(rad);
   let txtSize = 8;
@@ -202,53 +178,72 @@ function drawNode(_o,_x,_y){
 
   textSize(txtSize);
   text(`${_o.duration}`,0-((textWidth(_o.duration)/2)),0+txtSize/2);
-  text(`${_o.nom}:${_o.title}`,-150,0,150-bar);
+  text(`${_o.id}:${_o.nom}:${_o.title}`,-150,0,150-bar);
   //text(`?`,0+(txtSize/3),-bar+(txtSize/2));
   text(`S`,-bar-(txtSize),0+(txtSize/3));
   text(`F`,bar+(txtSize/3),0+(txtSize/3));
   text(`I`,0+(txtSize/3),bar+(txtSize/3));
 
   pop();
+  console.log(`draw ${_o.id} - done`);
   
 }
 
 //Status: Done : Orange
 function drawDependencyS2S( _o,_p){
-  console.log(`\t----------------- [ drawDependencyS2S :${_o.nom} : Start ]---------------`);
+  const c={h:19,s:83,b:98};
+  
   if ( _o == undefined || _o == null || _p == undefined || _p == null){
     console.log(`drawDependencyS2S - failed to render dependency. Invalid input`);
     return;
   }
+  
   // The predecessor task must have started, before this task can be started
   let s_pos = calc_I_PositionOfNode(_p);
-  let f_pos = calc_S_PositionOfNode(_o);
-  drawDependencyLine(f_pos.x,f_pos.y,s_pos.x,s_pos.y,19,83,98);
-  console.log(`\t----------------- [ drawDependencyS2S :${_o.nom} : End ]---------------`);
-  return;
+  let e_pos = calc_S_PositionOfNode(_o);
+  
+  drawDependencyLine(s_pos.x,s_pos.y,e_pos.x,e_pos.y,c.h,c.s,c.b);
+  return({
+    'key':`${_p.id}-${_o.id}`,
+    'dependency_type':'s2s',
+    'predecessor':_p.id,
+    'current':_o.id,
+    'start':s_pos,
+    'end':e_pos,
+    'color':c
+  });
   
 }
 
 // Status: Done : GREEN
 function drawDependencyS2F( _o,_p){
-  console.log(`\t----------------- [ drawDependencyS2F :${_o.nom} : Start ]---------------`);
+  const c={h:88,s:83,b:98};
+  
   if ( _o == undefined || _o == null || _p == undefined || _p == null){
     console.log(`drawDependencyS2F - failed to render dependency. Invalid input`);
     return;
   }
      // The predecessor task must have started, before this task can be finish
   let s_pos = calc_I_PositionOfNode(_p);
-  let f_pos = calc_F_PositionOfNode(_o);
-  drawDependencyLine(f_pos.x,f_pos.y,s_pos.x,s_pos.y,88,83,98);
-      
+  let e_pos = calc_F_PositionOfNode(_o);
+  drawDependencyLine(s_pos.x,s_pos.y,e_pos.x,e_pos.y,c.h,c.s,c.b);
   
   console.log(`\t----------------- [ drawDependencyS2F :${_o.nom} : End ]---------------`);
-  return;
+  return({
+    'key':`${_p.id}-${_o.id}`,
+    'dependency_type':'s2f',
+    'predecessor':_p.id,
+    'current':_o.id,
+    'start':s_pos,
+    'end':e_pos,
+    'color':c
+  });
 
 }
 
 //Status : Done - Yellow
 function drawDependencyF2F( _o,_p){
-  console.log(`\t----------------- [ drawDependencyF2F :${_o.nom} : Start ]---------------`);
+   const c={h:47,s:83,b:98};
   
   if ( _o == undefined || _o == null || _p == undefined || _p == null){
     console.log(`drawDependencyF2F - failed to render dependency. Invalid input`);
@@ -256,18 +251,26 @@ function drawDependencyF2F( _o,_p){
   }
   
   //predecessor must have finished (submitted) before this task can finish.
-  let s_pos = calc_F_PositionOfNode(_o);
-  let f_pos = calc_F_PositionOfNode(_p);
-  drawDependencyLine(s_pos.x,s_pos.y,f_pos.x,f_pos.y,47,83,98);
-  console.log(`\t----------------- [ drawDependencyF2F :${_o.nom} : End ]---------------`);
-  return;
+  let s_pos = calc_F_PositionOfNode(_p);
+  let e_pos = calc_F_PositionOfNode(_o);
+  drawDependencyLine(s_pos.x,s_pos.y,e_pos.x,e_pos.y,c.h,c.s,c.b);
+  
+  return({
+    'key':`${_p.id}-${_o.id}`,
+    'dependency_type':'f2f',
+    'predecessor':_p.id,
+    'current':_o.id,
+    'start':s_pos,
+    'end':e_pos,
+    'color':c
+  });
   
 }
 
 //Status: Blue - Blue
 function drawDependencyF2S( _o,_p){
   
-  console.log(`\t----------------- [ drawDependencyF2S :${_o.nom} : Start ]---------------`);
+   const c={h:230,s:83,b:98};
   
   if ( _o == undefined || _o == null || _p == undefined || _p == null){
     console.log(`drawDependencyF2S - failed to render dependency. Invalid input`);
@@ -279,13 +282,20 @@ function drawDependencyF2S( _o,_p){
     // get the S position from O
     // render line between the two positions
     // the predecessor task must of Finished, before this task can start
-    let s_pos = calc_S_PositionOfNode(_o);
-    let f_pos = calc_F_PositionOfNode(_p);
+    let s_pos = calc_F_PositionOfNode(_p);
+    let e_pos = calc_S_PositionOfNode(_o);
     
-    drawDependencyLine(s_pos.x,s_pos.y,f_pos.x,f_pos.y,230,83,98)
+    drawDependencyLine(s_pos.x,s_pos.y,e_pos.x,e_pos.y,c.h,c.s,c.b)
   
-  console.log(`\t----------------- [ drawDependencyF2S :${_o.nom} : End ]---------------`);
-    return;
+    return({
+    'key':`${_p.id}-${_o.id}`,
+    'dependency_type':'f2s',
+    'predecessor':_p.id,
+    'current':_o.id,
+    'start':s_pos,
+    'end':e_pos,
+    'color':c
+  });
   
 }
 
@@ -312,7 +322,7 @@ function drawDependencyLine(_x0,_y0,_x1,_y1,_h=0,_s=0,_b=0,_sz=0.3){
   stroke(_h,_s,_b);
   line(_x0,_y0,_x1,_y1);
   t = calcArrow(_x0,_y0,_x1,_y1);
-  fill(_h,_s,_b-20);
+  fill(_h,_s,_b);
   
   triangle(t.x,t.y,t.x1,t.y1,t.x2,t.y2);
   
@@ -320,26 +330,24 @@ function drawDependencyLine(_x0,_y0,_x1,_y1,_h=0,_s=0,_b=0,_sz=0.3){
   pop();
 }
 
-function calcArrow (_tipX, _tipY, _tailX, _tailY, _rad = 20, _sz = 10){
+function calcArrow (_startX, _startY, _endX, _endY, _rad = 20, _sz = 10){
       
-    let dx = _tipX - _tailX;
-    let dy = _tipY - _tailY;
+    let dx = _endX - _startX;
+    let dy = _endY - _startY;
 
     let theta = Math.atan2(dy, dx);
 
     let rad = radians(_rad); 
-    let x = _tipX - _sz * Math.cos(theta + rad);
-    let y = _tipY - _sz * Math.sin(theta + rad);
+    let x = _endX - _sz * Math.cos(theta + rad);
+    let y = _endY - _sz * Math.sin(theta + rad);
 
     let phi2 = radians(-_rad);
-    let x2 = _tipX - _sz * Math.cos(theta + phi2);
-    let y2 = _tipY - _sz * Math.sin(theta + phi2);
-
-   
-    
+    let x2 = _endX - _sz * Math.cos(theta + phi2);
+    let y2 = _endY - _sz * Math.sin(theta + phi2);
+ 
     return ({
-      'x':_tipX,
-      'y':_tipY,
+      'x':_endX,
+      'y':_endY,
       'x1':x,
       'y1':y,
       'x2':x2,
@@ -390,17 +398,20 @@ function renderNode( _flow, _idx) {
   
   
  
-  console.log(`----------------- [ Render :${o.id}${o.nom} : Start ]---------------`);
+  console.log(`----------------- [ Render id:${o.id} nom:${o.nom} : Start ]---------------`);
   let cmd = isCmdNode(o);
   if (cmd > 0){
     processCmd(cmd,o,x,y);
     return;
   }
+  
   drawNode(o,x,y);
   // save position, node is rendered.
   o.x = x;
   o.y = y;
   o.rendered = true;
+  
+ 
   
   // Node is rendered to the screen. and we have stored
   // the X/Y position of the node.  We should now check dep   // and the types of dependency so that we may render the   // the visuals correctly.
@@ -410,8 +421,6 @@ function renderNode( _flow, _idx) {
     let dependecyType = o.Dependency[i].type || 'f2s';
     let predecessorNode = null;
     
-    console.log(`${predecessorNodeId}: ${dependecyType}`);
-    
     if (predecessorNodeId != null)
       predecessorNode = getNode(C_FLOW, predecessorNodeId);
     else {
@@ -420,31 +429,32 @@ function renderNode( _flow, _idx) {
     }
       
     
-    
+    let depLine = null;
     if (predecessorNode !== null){  
-      console.log(`render based on dependency type : ${predecessorNode.nom} of type ${dependecyType}`);
       switch (dependecyType)
       {
         case 'f2s': 
-          drawDependencyF2S( o, predecessorNode );
+          depLine=drawDependencyF2S( o, predecessorNode );
           break;
         case 's2s':
-          drawDependencyS2S( o, predecessorNode );
+          depLine=drawDependencyS2S( o, predecessorNode );
+          
           break
         case 's2f':
-          drawDependencyS2F( o, predecessorNode );
+          depLine=drawDependencyS2F( o, predecessorNode );
           break
         case 'f2f':
-          drawDependencyF2F( o, predecessorNode );
+          depLine=drawDependencyF2F( o, predecessorNode );
           break
         default:
           console.error(`unknown dependency type for ${predecessorNodeId} in node object ${o.nom}`);
           
       }
+      dependencyLines.push(depLine);
       
     } // end if predecessorNode
     
-    console.log(`end`);
+   
     
   }
   
@@ -483,6 +493,70 @@ function renderFlow( _flow ) {
   }
 }
 
+function reposition( _flow ) {
+  let hozSpacing = 70;
+  
+  let x = 150;
+  let w = 20 ;
+  let h = 20;
+  
+  
+  /*
+  function calcDurationSize( _i, _z = 8 ){
+  return (_i*_z);
+}
+function calcBarLen ( _i, _z = 8){
+  return ( _i + _z );
+}
+  */
+    
+  for ( let i = 0 ; i < dependencyLines.length ; i++ ) {
+    let l = dependencyLines[i];
+    let pNode = getNodeByID(C_FLOW,l.predecessor);
+    let cNode = getNodeByID(C_FLOW,l.current);
+    
+    let dType = l.dependency_type;
+    
+    switch ( dType ) {
+      case 's2s':
+        let r = calcDurationSize(cNode.duration);
+        let b = calcBarLen(cNode.duration);
+       
+        cNode.x += (b+r) ; // this looks right...just not sure why it is!?
+        l.end.x += b+r;
+        
+        break;
+      case 'f2s':
+        break;
+      case 's2f':
+        break;
+      case 'f2f':
+        break;
+    }
+    drawDependencyLine(l.start.x,l.start.y,l.end.x,l.end.y,l.color.h,l.color.s,l.color.b);
+  }
+    
+  for ( let i in _flow.Nodes ){
+    let o = _flow.Nodes[i].Node;
+    
+    let y = 50+(i * hozSpacing);
+     
+    let cmd = isCmdNode(o);
+    if (cmd > 0){
+      
+      processCmd(cmd,o,x,y);
+      
+    } else {
+      
+      if (o.rendered)
+        drawNode(o,o.x,o.y);
+  
+    }
+  }
+  
+  
+}
+
 
 
 function setup(){
@@ -490,13 +564,14 @@ function setup(){
   degrees();
   colorMode(HSB);
   assignBaseColor(C_FLOW);
-  renderFlow(C_FLOW);
+  //renderFlow(C_FLOW);
   //saveCanvas('flow.new..1.dependency', 'png');
   loaded = !loaded;	
   background(220);
   renderTitle(C_FLOW);
   renderFlow(C_FLOW);
-  
+  background(220);
+  reposition(C_FLOW);
 }
 
 
@@ -505,6 +580,6 @@ function setup(){
 
 
 function draw() {
-    
+  
   
 }
